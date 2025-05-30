@@ -8,7 +8,7 @@ Usage: qr-gen [OPTIONS]
 Options:
   -e, --ecc <ECC>                  Error correction level. Use L, M, Q, or H. [default: M]
   -i, --input <INPUT>              Unicode text file or piped data.
-  -t, --output-type <OUTPUT>       Output file/data types. Use Text, SVG or PNG [default: Text]
+  -t, --output-type <OUTPUT_TYPE>  Output file/data types. Use Text, SVG or PNG [default: Text]
   -o, --output-file <OUTPUT_FILE>  Output file path only used for PNG. [default: qrcode.png]
   -h, --help                       Print help
   -V, --version                    Print version
