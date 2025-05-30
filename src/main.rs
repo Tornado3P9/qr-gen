@@ -13,7 +13,7 @@ struct Cli {
     #[arg(short, long, value_name = "INPUT", help = "Unicode text file or piped data.")]
 	input: Option<String>,
 
-    #[arg(short = 't', long, value_name = "OUTPUT", help = "Output file/data types. Use Text, SVG or PNG", default_value = "Text")]
+    #[arg(short = 't', long, value_name = "OUTPUT_TYPE", help = "Output file/data types. Use Text, SVG or PNG", default_value = "Text")]
     output_type: OutputType,
 
 	#[arg(short = 'o', long, value_name = "OUTPUT_FILE", help = "Output file path only used for PNG.", default_value = "qrcode.png")]
