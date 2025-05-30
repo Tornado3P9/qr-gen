@@ -16,8 +16,8 @@ struct Cli {
     #[arg(short = 't', long, value_name = "OUTPUT_TYPE", help = "Output file/data types. Use Text, SVG or PNG", default_value = "Text")]
     output_type: OutputType,
 
-	#[arg(short = 'o', long, value_name = "OUTPUT_FILE", help = "Output file path only used for PNG.", default_value = "qrcode.png")]
-	output_file: String,
+    #[arg(short = 'o', long, value_name = "OUTPUT_FILE", help = "Output file path only used for PNG.", default_value = "qrcode.png")]
+    output_file: String,
 }
 
 
