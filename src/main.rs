@@ -57,25 +57,23 @@ fn main() -> io::Result<()> {
     };
 
     // let mut text = String::new();
-    // // Check if there's data in the standard input (pipe)
     // if let Some(file_path) = args.input {
     // 	let mut file = File::open(file_path)?;
     // 	file.read_to_string(&mut text)?;
     // } else if atty::isnt(atty::Stream::Stdin) {
-    // 	// Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
     // 	io::stdin().read_to_string(&mut text)?;
     // } else {
     // 	eprintln!("No input provided. Please specify a file or pipe data.");
     // 	return Ok(());
     // }
 
-    let mut text = String::new();
     // Check if there's data in the standard input (pipe)
+    // Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
+    let mut text = String::new();
     if let Some(file_path) = args.input {
         let mut file = File::open(file_path)?;
         file.read_to_string(&mut text)?;
     } else if !io::stdin().is_terminal() {
-        // Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
         io::stdin().read_to_string(&mut text)?;
     } else {
         eprintln!("No input provided. Please specify a file or pipe data.");
