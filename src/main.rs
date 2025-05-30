@@ -11,7 +11,7 @@ struct Cli {
     ecc: String,
 
     #[arg(short, long, value_name = "INPUT", help = "Unicode text file or piped data.")]
-	input: Option<String>,
+    input: Option<String>,
 
     #[arg(short = 't', long, value_name = "OUTPUT_TYPE", help = "Output file/data types. Use Text, SVG or PNG", default_value = "Text")]
     output_type: OutputType,
@@ -43,60 +43,60 @@ impl std::str::FromStr for OutputType {
 
 
 fn main() -> io::Result<()> {
-	let args = Cli::parse();
+    let args = Cli::parse();
 
-	let ecc: QrCodeEcc = match args.ecc.to_lowercase().as_str() {
-		"l" => QrCodeEcc::Low,
-		"m" => QrCodeEcc::Medium,
-		"q" => QrCodeEcc::Quartile,
-		"h" => QrCodeEcc::High,
-		_ => {
-			eprintln!("Invalid error correction level. Use L, M, Q, or H.");
-			return Ok(());
-		}
-	};
+    let ecc: QrCodeEcc = match args.ecc.to_lowercase().as_str() {
+        "l" => QrCodeEcc::Low,
+        "m" => QrCodeEcc::Medium,
+        "q" => QrCodeEcc::Quartile,
+        "h" => QrCodeEcc::High,
+        _ => {
+            eprintln!("Invalid error correction level. Use L, M, Q, or H.");
+            return Ok(());
+        }
+    };
 
-	// let mut text = String::new();
-	// // Check if there's data in the standard input (pipe)
-	// if let Some(file_path) = args.input {
-	// 	let mut file = File::open(file_path)?;
-	// 	file.read_to_string(&mut text)?;
-	// } else if atty::isnt(atty::Stream::Stdin) {
-	// 	// Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
-	// 	io::stdin().read_to_string(&mut text)?;
-	// } else {
-	// 	eprintln!("No input provided. Please specify a file or pipe data.");
-	// 	return Ok(());
-	// }
+    // let mut text = String::new();
+    // // Check if there's data in the standard input (pipe)
+    // if let Some(file_path) = args.input {
+    // 	let mut file = File::open(file_path)?;
+    // 	file.read_to_string(&mut text)?;
+    // } else if atty::isnt(atty::Stream::Stdin) {
+    // 	// Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
+    // 	io::stdin().read_to_string(&mut text)?;
+    // } else {
+    // 	eprintln!("No input provided. Please specify a file or pipe data.");
+    // 	return Ok(());
+    // }
 
-	let mut text = String::new();
-	// Check if there's data in the standard input (pipe)
-	if let Some(file_path) = args.input {
-		let mut file = File::open(file_path)?;
-		file.read_to_string(&mut text)?;
-	} else if !io::stdin().is_terminal() {
-		// Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
-		io::stdin().read_to_string(&mut text)?;
-	} else {
-		eprintln!("No input provided. Please specify a file or pipe data.");
-		return Ok(());
-	}
+    let mut text = String::new();
+    // Check if there's data in the standard input (pipe)
+    if let Some(file_path) = args.input {
+        let mut file = File::open(file_path)?;
+        file.read_to_string(&mut text)?;
+    } else if !io::stdin().is_terminal() {
+        // Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
+        io::stdin().read_to_string(&mut text)?;
+    } else {
+        eprintln!("No input provided. Please specify a file or pipe data.");
+        return Ok(());
+    }
 
-	// Attempt to encode the text into a QR code
-	match QrCode::encode_text(&text, ecc) {
-		Ok(qr) => {
-			match args.output_type {
-				OutputType::TXT => print_qr(&qr),
-				OutputType::SVG => println!("{}", to_svg_string(&qr, 4, 10)),
-				OutputType::PNG => write_to_png_scaled(&qr, 4, 10, &args.output_file),
-			}
-		}
-		Err(e) => {
-			eprintln!("Failed to generate QR code: {}", e);
-		}
-	}
+    // Attempt to encode the text into a QR code
+    match QrCode::encode_text(&text, ecc) {
+        Ok(qr) => {
+            match args.output_type {
+                OutputType::TXT => print_qr(&qr),
+                OutputType::SVG => println!("{}", to_svg_string(&qr, 4, 10)),
+                OutputType::PNG => write_to_png_scaled(&qr, 4, 10, &args.output_file),
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to generate QR code: {}", e);
+        }
+    }
 
-	Ok(())
+    Ok(())
 }
 
 
@@ -106,50 +106,50 @@ fn main() -> io::Result<()> {
 // the given QR Code, with the given number of border modules.
 // The string always uses Unix newlines (\n), regardless of the platform.
 fn to_svg_string(qr: &QrCode, border: i32, scale: i32) -> String {
-	assert!(border >= 0, "Border must be non-negative");
-	assert!(scale > 0, "Scale must be positive");
-	let mut result = String::new();
-	result += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	result += "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
-	let dimension = qr.size().checked_add(border.checked_mul(2).unwrap()).unwrap() * scale;
-	result += &format!(
-		"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 {0} {0}\" width=\"{0}\" height=\"{0}\" stroke=\"none\">\n", dimension);
-	result += "\t<rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n";
-	result += "\t<path d=\"";
-	for y in 0..qr.size() {
-		for x in 0..qr.size() {
-			if qr.get_module(x, y) {
-				if x != 0 || y != 0 {
-					result += " ";
-				}
-				result += &format!("M{},{}h{}v{}h-{}z", (x + border) * scale, (y + border) * scale, scale, scale, scale);
-			}
-		}
-	}
-	result += "\" fill=\"#000000\"/>\n";
-	result += "</svg>\n";
-	result
+    assert!(border >= 0, "Border must be non-negative");
+    assert!(scale > 0, "Scale must be positive");
+    let mut result = String::new();
+    result += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    result += "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+    let dimension = qr.size().checked_add(border.checked_mul(2).unwrap()).unwrap() * scale;
+    result += &format!(
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 {0} {0}\" width=\"{0}\" height=\"{0}\" stroke=\"none\">\n", dimension);
+    result += "\t<rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n";
+    result += "\t<path d=\"";
+    for y in 0..qr.size() {
+        for x in 0..qr.size() {
+            if qr.get_module(x, y) {
+                if x != 0 || y != 0 {
+                    result += " ";
+                }
+                result += &format!("M{},{}h{}v{}h-{}z", (x + border) * scale, (y + border) * scale, scale, scale, scale);
+            }
+        }
+    }
+    result += "\" fill=\"#000000\"/>\n";
+    result += "</svg>\n";
+    result
 }
 
 
 // Prints the given QrCode object to the console.
 fn print_qr(qr: &QrCode) {
-	let border: i32 = 4;
-	for y in -border .. qr.size() + border {
-		for x in -border .. qr.size() + border {
-			let c: char = if qr.get_module(x, y) { '█' } else { ' ' };
-			print!("{0}{0}", c);
-		}
-		println!();
-	}
-	println!();
+    let border: i32 = 4;
+    for y in -border .. qr.size() + border {
+        for x in -border .. qr.size() + border {
+            let c: char = if qr.get_module(x, y) { '█' } else { ' ' };
+            print!("{0}{0}", c);
+        }
+        println!();
+    }
+    println!();
 }
 
 
 // Writes the given QrCode object to a PNG image with the specified scale and border width.
 fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &str) {
-	assert!(border >= 0, "Border must be non-negative");
-	assert!(scale_factor > 0, "Scale must be positive");
+    assert!(border >= 0, "Border must be non-negative");
+    assert!(scale_factor > 0, "Scale must be positive");
     // Convert QR code to an image
     let size = qr.size();
     // let border = 4;
