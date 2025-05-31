@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{self, Read, IsTerminal};
 
 #[derive(Parser, Debug)]
-#[command(version, about = "Create a QR Code from text file or piped data")]
+#[command(version, about = "Create a QR code from text file or piped data")]
 struct Cli {
     #[arg(short, long, value_name = "ECC", help = "Error correction level. Use L, M, Q, or H.", default_value = "M")]
     ecc: String,
@@ -18,6 +18,12 @@ struct Cli {
 
     #[arg(short = 'o', long, value_name = "OUTPUT_FILE", help = "Output file path only used for PNG.", default_value = "qrcode.png")]
     output_file: String,
+
+    #[arg(short = 'b', long, value_name = "BORDER_WIDTH", help = "SVG or PNG border surrounding the QR code.", default_value_t = 4)]
+    border_width: i32,
+
+    #[arg(short = 's', long, value_name = "SCALE", help = "Scale of the SVG or PNG image.", default_value_t = 10)]
+    scale: i32,
 }
 
 
@@ -85,8 +91,8 @@ fn main() -> io::Result<()> {
         Ok(qr) => {
             match args.output_type {
                 OutputType::TXT => print_qr(&qr),
-                OutputType::SVG => println!("{}", to_svg_string(&qr, 4, 10)),
-                OutputType::PNG => write_to_png_scaled(&qr, 4, 10, &args.output_file),
+                OutputType::SVG => println!("{}", to_svg_string(&qr, args.border_width, args.scale)),
+                OutputType::PNG => write_to_png_scaled(&qr, args.border_width, args.scale.try_into().unwrap(), &args.output_file),
             }
         }
         Err(e) => {
