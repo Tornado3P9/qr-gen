@@ -3,7 +3,7 @@ use qrcodegen::{QrCode, QrCodeEcc};
 use image::{Luma, ImageBuffer, imageops::FilterType};
 use std::fs::File;
 use std::io::{self, Read, IsTerminal};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser, Debug)]
 #[command(version, about = "Create a QR code from text file or piped data")]
@@ -18,7 +18,7 @@ struct Cli {
     output_type: OutputType,
 
     #[arg(short = 'o', long, value_name = "OUTPUT_FILE", help = "Output file path only used for PNG.", default_value = "qrcode.png")]
-    output_file: String,
+    output_file: PathBuf,
 
     #[arg(short = 'b', long, value_name = "BORDER_WIDTH", help = "SVG or PNG border surrounding the QR code.", default_value_t = 4)]
     border_width: i32,
@@ -107,7 +107,7 @@ fn read_input(input: &Option<PathBuf>) -> Result<String, io::Error> {
         io::stdin().read_to_string(&mut text)?;
     } else {
         eprintln!("No input provided. Please specify a file or pipe data.");
-        return Ok(String::new());
+        std::process::exit(1); // Exit the program with a non-zero status
     }
 
     Ok(text)
@@ -159,7 +159,7 @@ fn print_qr(qr: &QrCode) {
 
 
 // Writes the given QrCode object to a PNG image with the specified scale and border width.
-fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &str) -> Result<(), String> {
+fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &Path) -> Result<(), String> {
     // Validate inputs
     if border < 0 {
         return Err("Border must be non-negative".to_string());
