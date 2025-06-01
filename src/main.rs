@@ -63,28 +63,6 @@ fn main() -> io::Result<()> {
         }
     };
 
-    // // Check if there's data in the standard input (pipe: atty crate is unmaintaned and the stable IsTerminal trait should be used now)
-    // // Otherwise, read from a file
-    // let mut text: String = String::new();
-    // if let Some(file_path) = args.input {
-    //     let mut file: File = match File::open(file_path) {
-    //         Ok(file) => file,
-    //         Err(e) => {
-    //             eprintln!("Failed to open the file: {}", e);
-    //             return Err(e);
-    //         }
-    //     };
-    //     if let Err(e) = file.read_to_string(&mut text) {
-    //         eprintln!("Failed to read the file: {}", e);
-    //         return Err(e);
-    //     }
-    // } else if !io::stdin().is_terminal() {
-    //     io::stdin().read_to_string(&mut text)?;
-    // } else {
-    //     eprintln!("No input provided. Please specify a file or pipe data.");
-    //     return Ok(());
-    // }
-
     // Call the read_input function
     let text: String = read_input(&args.input)?;
     
