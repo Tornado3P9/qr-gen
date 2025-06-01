@@ -3,6 +3,7 @@ use qrcodegen::{QrCode, QrCodeEcc};
 use image::{Luma, ImageBuffer, imageops::FilterType};
 use std::fs::File;
 use std::io::{self, Read, IsTerminal};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "Create a QR code from text file or piped data")]
@@ -11,7 +12,7 @@ struct Cli {
     ecc: String,
 
     #[arg(short, long, value_name = "INPUT", help = "Unicode text file or piped data.")]
-    input: Option<String>,
+    input: Option<PathBuf>,
 
     #[arg(short = 't', long, value_name = "OUTPUT_TYPE", help = "Output file/data types. Use Text, SVG or PNG", default_value = "Text")]
     output_type: OutputType,
@@ -62,30 +63,31 @@ fn main() -> io::Result<()> {
         }
     };
 
-    // let mut text = String::new();
+    // // Check if there's data in the standard input (pipe: atty crate is unmaintaned and the stable IsTerminal trait should be used now)
+    // // Otherwise, read from a file
+    // let mut text: String = String::new();
     // if let Some(file_path) = args.input {
-    // 	let mut file = File::open(file_path)?;
-    // 	file.read_to_string(&mut text)?;
-    // } else if atty::isnt(atty::Stream::Stdin) {
-    // 	io::stdin().read_to_string(&mut text)?;
+    //     let mut file: File = match File::open(file_path) {
+    //         Ok(file) => file,
+    //         Err(e) => {
+    //             eprintln!("Failed to open the file: {}", e);
+    //             return Err(e);
+    //         }
+    //     };
+    //     if let Err(e) = file.read_to_string(&mut text) {
+    //         eprintln!("Failed to read the file: {}", e);
+    //         return Err(e);
+    //     }
+    // } else if !io::stdin().is_terminal() {
+    //     io::stdin().read_to_string(&mut text)?;
     // } else {
-    // 	eprintln!("No input provided. Please specify a file or pipe data.");
-    // 	return Ok(());
+    //     eprintln!("No input provided. Please specify a file or pipe data.");
+    //     return Ok(());
     // }
 
-    // Check if there's data in the standard input (pipe)
-    // Otherwise, read from a file (atty is unmaintaned and the stable IsTerminal trait should be used now)
-    let mut text = String::new();
-    if let Some(file_path) = args.input {
-        let mut file = File::open(file_path)?;
-        file.read_to_string(&mut text)?;
-    } else if !io::stdin().is_terminal() {
-        io::stdin().read_to_string(&mut text)?;
-    } else {
-        eprintln!("No input provided. Please specify a file or pipe data.");
-        return Ok(());
-    }
-
+    // Call the read_input function
+    let text: String = read_input(&args.input)?;
+    
     // Attempt to encode the text into a QR code
     match QrCode::encode_text(&text, ecc) {
         Ok(qr) => {
@@ -105,6 +107,29 @@ fn main() -> io::Result<()> {
 
 
 /*---- Utilities ----*/
+
+// Check if there's data in the standard input
+// Otherwise, read from a file
+fn read_input(input: &Option<PathBuf>) -> Result<String, io::Error> {
+    let mut text = String::new();
+
+    if let Some(file_path) = input {
+        File::open(file_path)
+            .and_then(|mut file| file.read_to_string(&mut text))
+            .map_err(|e| {
+                eprintln!("Error reading file '{}': {}", file_path.display(), e);
+                e
+            })?;
+    } else if !io::stdin().is_terminal() {
+        io::stdin().read_to_string(&mut text)?;
+    } else {
+        eprintln!("No input provided. Please specify a file or pipe data.");
+        return Ok(String::new());
+    }
+
+    Ok(text)
+}
+
 
 // Returns a string of SVG code for an image depicting
 // the given QR Code, with the given number of border modules.
@@ -155,10 +180,10 @@ fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &
     assert!(border >= 0, "Border must be non-negative");
     assert!(scale_factor > 0, "Scale must be positive");
     // Convert QR code to an image
-    let size = qr.size();
+    let size: i32 = qr.size();
     // let border = 4;
-    let img_size = (size + 2 * border) as u32;
-    let mut img = ImageBuffer::from_pixel(img_size, img_size, Luma([255u8]));
+    let img_size: u32 = (size + 2 * border) as u32;
+    let mut img: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::from_pixel(img_size, img_size, Luma([255u8]));
 
     for y in 0..size {
         for x in 0..size {
@@ -169,8 +194,11 @@ fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &
     }
 
     // Scale the image
-    let scaled_img = image::imageops::resize(&img, img_size * scale_factor, img_size * scale_factor, FilterType::Nearest);
+    let scaled_img: ImageBuffer<Luma<u8>, Vec<u8>> = image::imageops::resize(&img, img_size * scale_factor, img_size * scale_factor, FilterType::Nearest);
 
     // Save the scaled image as a PNG file
-    scaled_img.save(file_path).unwrap();
+    // scaled_img.save(file_path).unwrap();
+    if let Err(e) = scaled_img.save(file_path) {
+        eprintln!("Failed to save PNG file: {}", e);
+    }
 }
