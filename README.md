@@ -19,4 +19,6 @@ Examples:
   echo "Hello World!" | qr-gen -t png -o ~/qrcode.png
 ```
 
-Idea from: https://github.com/nayuki/QR-Code-generator/blob/2c9044de6b049ca25cb3cd1649ed7e27aa055138/rust/examples/qrcodegen-demo.rs
+Inspired by: https://github.com/nayuki/QR-Code-generator/blob/2c9044de6b049ca25cb3cd1649ed7e27aa055138/rust/examples/qrcodegen-demo.rs
+
+Test with: https://secuso.aifb.kit.edu/QR_Scanner.php

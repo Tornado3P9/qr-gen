@@ -65,14 +65,18 @@ fn main() -> io::Result<()> {
 
     // Call the read_input function
     let text: String = read_input(&args.input)?;
-    
+
     // Attempt to encode the text into a QR code
     match QrCode::encode_text(&text, ecc) {
         Ok(qr) => {
             match args.output_type {
                 OutputType::TXT => print_qr(&qr),
                 OutputType::SVG => println!("{}", to_svg_string(&qr, args.border_width, args.scale)),
-                OutputType::PNG => write_to_png_scaled(&qr, args.border_width, args.scale.try_into().unwrap(), &args.output_file),
+                OutputType::PNG => {
+                    if let Err(e) = write_to_png_scaled(&qr, args.border_width, args.scale as u32, &args.output_file) {
+                        eprintln!("Error writing PNG: {}", e);
+                    }
+                }
             }
         }
         Err(e) => {
@@ -85,6 +89,7 @@ fn main() -> io::Result<()> {
 
 
 /*---- Utilities ----*/
+
 
 // Check if there's data in the standard input
 // Otherwise, read from a file
@@ -154,15 +159,21 @@ fn print_qr(qr: &QrCode) {
 
 
 // Writes the given QrCode object to a PNG image with the specified scale and border width.
-fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &str) {
-    assert!(border >= 0, "Border must be non-negative");
-    assert!(scale_factor > 0, "Scale must be positive");
-    // Convert QR code to an image
+fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &str) -> Result<(), String> {
+    // Validate inputs
+    if border < 0 {
+        return Err("Border must be non-negative".to_string());
+    }
+    if scale_factor < 1 {
+        return Err("Scale factor must be positive".to_string());
+    }
+
+    // Calculate image size
     let size: i32 = qr.size();
-    // let border = 4;
     let img_size: u32 = (size + 2 * border) as u32;
     let mut img: ImageBuffer<Luma<u8>, Vec<u8>> = ImageBuffer::from_pixel(img_size, img_size, Luma([255u8]));
 
+    // Draw QR code onto the image
     for y in 0..size {
         for x in 0..size {
             if qr.get_module(x, y) {
@@ -175,8 +186,5 @@ fn write_to_png_scaled(qr: &QrCode, border: i32, scale_factor: u32, file_path: &
     let scaled_img: ImageBuffer<Luma<u8>, Vec<u8>> = image::imageops::resize(&img, img_size * scale_factor, img_size * scale_factor, FilterType::Nearest);
 
     // Save the scaled image as a PNG file
-    // scaled_img.save(file_path).unwrap();
-    if let Err(e) = scaled_img.save(file_path) {
-        eprintln!("Failed to save PNG file: {}", e);
-    }
+    scaled_img.save(file_path).map_err(|e| format!("Failed to save PNG file: {}", e))
 }
