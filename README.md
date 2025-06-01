@@ -6,12 +6,14 @@ Create a QR Code from text file or piped data
 Usage: qr-gen [OPTIONS]
 
 Options:
-  -e, --ecc <ECC>                  Error correction level. Use L, M, Q, or H. [default: M]
-  -i, --input <INPUT>              Unicode text file or piped data.
-  -t, --output-type <OUTPUT_TYPE>  Output file/data types. Use Text, SVG or PNG [default: Text]
-  -o, --output-file <OUTPUT_FILE>  Output file path only used for PNG. [default: qrcode.png]
-  -h, --help                       Print help
-  -V, --version                    Print version
+  -e, --ecc <ECC>                    Error correction level. Use L, M, Q, or H. [default: M]
+  -i, --input <INPUT>                Unicode text file or piped data.
+  -t, --output-type <OUTPUT_TYPE>    Output file/data types. Use Text, SVG or PNG [default: Text]
+  -o, --output-file <OUTPUT_FILE>    Output file path only used for PNG. [default: qrcode.png]
+  -b, --border-width <BORDER_WIDTH>  SVG or PNG border surrounding the QR code. [default: 4]
+  -s, --scale <SCALE>                Scale of the SVG or PNG image. [default: 10]
+  -h, --help                         Print help
+  -V, --version                      Print version
 
 Examples:
   echo "Hello World!" | qr-gen
