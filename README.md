@@ -18,7 +18,7 @@ Options:
 Examples:
   echo "Hello World!" | qr-gen
   qr-gen -i input.txt -t svg > qrcode.svg
-  echo "Hello World!" | qr-gen -t png -o ~/qrcode.png
+  echo -n "Hello World!" | qr-gen -t png -o ~/qrcode.png
 ```
 
 Inspired by: https://github.com/nayuki/QR-Code-generator/blob/2c9044de6b049ca25cb3cd1649ed7e27aa055138/rust/examples/qrcodegen-demo.rs
