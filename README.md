@@ -16,7 +16,7 @@ Options:
   -V, --version                      Print version
 
 Examples:
-  echo "Hello World!" | qr-gen
+  echo -n "Hello World!" | qr-gen
   qr-gen -i input.txt -t svg > qrcode.svg
   echo -n "Hello World!" | qr-gen -t png -o ~/qrcode.png
 ```
