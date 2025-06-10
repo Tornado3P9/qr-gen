@@ -1,9 +1,23 @@
 use std::{fs::File, io::{self, IsTerminal, Read}, path::PathBuf};
 use image::ImageReader;
+use clap::Parser;
+
+
+#[derive(Parser, Debug)]
+#[command(version, about = "Extract data from a QR code file or piped data")]
+struct Cli {
+    #[arg(short, long, value_name = "INPUT", help = "Unicode text file or piped data.")]
+    input: Option<PathBuf>,
+}
+
 
 fn main() -> io::Result<()> {
-    let myimage: Option<PathBuf> = Some(PathBuf::from("qrcode.png"));
+    let args = Cli::parse();
+
+    // let myimage: Option<PathBuf> = Some(PathBuf::from("qrcode.png"));
     // let myimage: Option<PathBuf> = None;
+
+    let myimage: Option<PathBuf> = args.input;
 
     let img = read_image(myimage)?;
 
