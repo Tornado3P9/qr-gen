@@ -6,7 +6,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(version, about = "Extract data from a QR code file or piped data")]
 struct Cli {
-    #[arg(short, long, value_name = "INPUT", help = "Unicode text file or piped data.")]
+    #[arg(short, long, value_name = "INPUT", help = "QR code image file or piped data.")]
     input: Option<PathBuf>,
 }
 
